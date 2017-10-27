@@ -39,7 +39,7 @@ module Middleman
 
         lexer = lexer_for_language(fence_name_to_language(language.to_s), code)
 
-        metadata[:class] = [ metadata[:class].to_s, lexer.tag ].join(' ') 
+        metadata[:class] = [ metadata[:class].to_s, lexer.tag ].join(' ')
         # formatter_options = { css_class: [ metadata[:class].to_s, lexer.tag ].join(' ') }
         # TODO this probably needs to be read from the MIDDLEMAN extension settings
         lexer_options = {}

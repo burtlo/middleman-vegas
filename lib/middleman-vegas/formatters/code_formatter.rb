@@ -4,75 +4,52 @@ module Middleman
     # When you want to render code in what looks like an editor this is your
     # formatter to use.
     class CodeFormatter
-
-      def initialize
-        @min_line_threshold_for_line_numbers = 2
-        @default_title = ""
-      end
-
-      attr_reader :min_line_threshold_for_line_numbers, :default_title
-
       def render(lexed_code, metadata)
+        formatter = Rouge::Formatters::HTML.new(wrap: false)
+        rendered_code = formatter.format(lexed_code)
+        rendered_code = tableize_code(rendered_code, metadata)
 
-        # convert the metadata to rouge compatible keys
-        # class to css_class
-        # linenos to line_numbers
-
-        formatter_options = {
-          css_class: metadata[:class].to_s,
-          line_numbers: metadata[:linenos],
-          start_line: metadata[:start] || 1
-        }
-
-        # When its a really small amount of code do not show the line numbers
-        # Remember that if you use the first comment for the title it counts
-
-        if line_count(lexed_code) > min_line_threshold_for_line_numbers
-          formatter_options[:line_numbers] = true
-        else
-          formatter_options[:css_class] += " no-lineno"
+        classnames = 'code-highlight-figure'
+        if metadata[:class]
+          classnames << ' ' + metadata[:class]
         end
 
-        # Generate an HTML table with line numbers and then wrap it so
-        # pygments will be able to properly apply its style.
-
-
-
-        # formatter = Rouge::Formatters::HTMLLegacy.new(formatter_options)
-        formatter = Rouge::Formatters::HTMLTable.new(Rouge::Formatters::HTML.new,formatter_options)
-
-        inner_content = pygments_wrap formatter.format(lexed_code).strip, formatter_options[:css_class]
-
-        # Place the code into HTML that will look like a code window.
-        source_window inner_content, metadata[:title]
+        "<figure class='#{classnames}'>#{caption(metadata)}#{rendered_code}</figure>"
       end
 
-      def line_count(lexed_code)
-        lexed_code.find_all { |tk,val| val.include?("\n") }.count
+      def tableize_code(code, options)
+        start = options[:start] || 1
+        lines = options[:linenos] || true
+        marks = options[:marks] || []
+
+        table = "<div class='code-highlight'>"
+        table += "<pre class='code-highlight-pre'>"
+        code.lines.each_with_index do |line,index|
+          classes = 'code-highlight-row'
+          classes += lines ? ' numbered' : ' unnumbered'
+          if marks.include? index + start
+            classes += ' marked-line'
+            classes += ' start-marked-line' unless marks.include? index - 1 + start
+            classes += ' end-marked-line' unless marks.include? index + 1 + start
+          end
+          line = line.strip.empty? ? ' ' : line
+          table += "<div data-line='#{index + start}' class='#{classes}'><div class='code-highlight-line'>#{line}</div></div>"
+        end
+        table +="</pre></div>"
       end
 
-      def pygments_wrap(content, css_class)
-        "<div class='#{css_class}'><pre class='code_wrapper'>#{content}</pre></div>"
+      def caption(options)
+        if options[:title]
+          figcaption  = "<figcaption class='code-highlight-caption'><span class='code-highlight-caption-title'>#{options[:title]}</span>"
+          figcaption += "<a class='code-highlight-caption-link' href='#{options[:url]}'>#{(options[:link_text] || 'link').strip}</a>" if options[:url]
+          figcaption += "</figcaption>"
+        else
+          ''
+        end
       end
 
-      # Wrap the content with HTML that will be styled in CSS.
-      #
-      # @note an empty title string will render an empty h1 which makes no title
-      #   to display. This is the intended behavior for all the reference windows
-      #   we have on the site.
-      def source_window(content, title)
-<<-EOH
-<div class="window">
-<h1 class="app-title">#{title}</h1>
-<div class="contents">
-  <div class="editor">
-    #{content}
-  </div>
-</div>
-</div>
-EOH
-      end
+
+
     end
-
   end
 end
