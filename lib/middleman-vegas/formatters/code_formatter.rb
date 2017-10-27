@@ -9,18 +9,15 @@ module Middleman
         rendered_code = formatter.format(lexed_code)
         rendered_code = tableize_code(rendered_code, metadata)
 
-        classnames = 'code-highlight-figure'
-        if metadata[:class]
-          classnames << ' ' + metadata[:class]
-        end
+        classnames = [ 'code-highlight-figure', metadata[:class].to_s ].join(' ')
 
         "<figure class='#{classnames}'>#{caption(metadata)}#{rendered_code}</figure>"
       end
 
       def tableize_code(code, options)
         start = options[:start] || 1
-        lines = options[:linenos] || true
-        marks = options[:marks] || []
+        lines = options[:linenos] || false
+        marks = options[:marks]
 
         table = "<div class='code-highlight'>"
         table += "<pre class='code-highlight-pre'>"
@@ -47,8 +44,6 @@ module Middleman
           ''
         end
       end
-
-
 
     end
   end

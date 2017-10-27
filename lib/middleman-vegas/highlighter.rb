@@ -10,22 +10,8 @@ module Middleman
     module Highlighter
       mattr_accessor :options
 
-      # The highlight method is called when using:
-      #
-      #    * markdown code fences
-      #    * kramdown code fences
-      #    * erb 'code' helper method
-      #
-      #       <% code('ruby', :line_numbers => true, :start_line => 7) do %>
-      #         my code
-      #       <% end %>
-      #
-      #    * slim 'code' helper method
-      #
-      #       = code(:yaml) do
-      #         |
-      #          version: '3'
-      #          services:
+      # The highlight method is called when code fences are used in RedCarpet
+      # and when the code helper is used.
       #
       # @param code [String] the content found within the code block
       # @param options [Hash] contains any additional rendering options provided
@@ -40,11 +26,8 @@ module Middleman
         lexer = lexer_for_language(fence_name_to_language(language.to_s), code)
 
         metadata[:class] = [ metadata[:class].to_s, lexer.tag ].join(' ')
-        # formatter_options = { css_class: [ metadata[:class].to_s, lexer.tag ].join(' ') }
-        # TODO this probably needs to be read from the MIDDLEMAN extension settings
-        lexer_options = {}
-        # lexer_options = formatter_options.delete(:lexer_options)
-        lexed_code = lexer.lex(code, lexer_options)
+
+        lexed_code = lexer.lex(code, {})
 
         formatter = formatter_for_language(language.to_s)
         formatter.render(lexed_code, metadata)
