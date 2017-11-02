@@ -1,21 +1,31 @@
 require 'cgi'
+require 'middleman-vegas/lexers/habitat_studio'
 
 module Middleman
   module Vegas
     class TerminalFormatter
-      def render(lexed_code, metadata)
-        rendered_code = lexed_code.map { |token,text| text }.join
-        rendered_code = tableize_code(rendered_code, metadata)
+      def render(code, metadata)
+        rendered_code = tableize_code(code, metadata)
 
         classnames = [ 'code-highlight-figure', metadata[:class].to_s ].join(' ')
 
         "<figure class='#{classnames}'>#{caption(metadata)}#{rendered_code}</figure>"
       end
 
-      def tableize_code(code, options)
-        start = options[:start] || 1
-        lines = options[:linenos] || false
-        marks = options[:marks]
+      def with_lang_aliases_considered(lang)
+        case lang
+        when 'ps', 'ps1', 'cmd'
+          'powershell'
+        else
+          lang
+        end
+      end
+
+      def tableize_code(code, metadata)
+        start = metadata[:start] || 1
+        lines = metadata[:linenos] || false
+        marks = metadata[:marks]
+        language = with_lang_aliases_considered(metadata[:lang])
 
         table = "<div class='code-highlight'>"
         table += "<pre class='code-highlight-pre'>"
@@ -29,19 +39,19 @@ module Middleman
             classes += ' end-marked-line' unless marks.include? index + 1 + start
           end
 
-          rendered_line = line_lexers.find { |lexer| lexer.find(line) }.new(options).render(options[:lang], line)
+          rendered_line = line_lexers.find { |lexer| lexer.find(line) }.new(metadata).render(language, line)
           line = line.strip.empty? ? ' ' : line
-          classes += ' command' if options[:command_line]
+          classes += ' command' if metadata[:command_line]
 
           table += "<div data-line='#{index + start}' class='#{classes}'><div class='code-highlight-line'>#{rendered_line}</div></div>"
         end
         table +="</pre></div>"
       end
 
-      def caption(options)
-        if options[:title]
-          figcaption  = "<figcaption class='code-highlight-caption'><span class='code-highlight-caption-title'>#{options[:title]}</span>"
-          figcaption += "<a class='code-highlight-caption-link' href='#{options[:url]}'>#{(options[:link_text] || 'link').strip}</a>" if options[:url]
+      def caption(metadata)
+        if metadata[:title]
+          figcaption  = "<figcaption class='code-highlight-caption'><span class='code-highlight-caption-title'>#{metadata[:title]}</span>"
+          figcaption += "<a class='code-highlight-caption-link' href='#{metadata[:url]}'>#{(metadata[:link_text] || 'link').strip}</a>" if metadata[:url]
           figcaption += "</figcaption>"
         else
           ''
@@ -67,6 +77,7 @@ module Middleman
           metadata[:command_line] = true
           metadata[:command_continues] = has_continuation?(line)
           formatter = Rouge::Formatters::HTML.new(wrap: false)
+          puts "lex(#{language}) for #{line}"
           lexer = Rouge::Lexer.find_fancy(language, line)
           formatter.format(lexer.lex(line, {}))
         end

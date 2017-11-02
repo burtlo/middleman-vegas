@@ -4,7 +4,12 @@ module Middleman
     # When you want to render code in what looks like an editor this is your
     # formatter to use.
     class CodeFormatter
-      def render(lexed_code, metadata)
+      def render(code, metadata)
+        language = with_lang_aliases_considered(metadata[:lang])
+
+        lexer = Rouge::Lexer.find_fancy(language, code) || Rouge::Lexers::PlainText
+        lexed_code = lexer.lex(code, {})
+
         formatter = Rouge::Formatters::HTML.new(wrap: false)
         rendered_code = formatter.format(lexed_code)
         rendered_code = tableize_code(rendered_code, metadata)
@@ -12,6 +17,15 @@ module Middleman
         classnames = [ 'code-highlight-figure', metadata[:class].to_s ].join(' ')
 
         "<figure class='#{classnames}'>#{caption(metadata)}#{rendered_code}</figure>"
+      end
+
+      def with_lang_aliases_considered(lang)
+        case lang
+        when 'ps', 'ps1', 'cmd'
+          'powershell'
+        else
+          lang
+        end
       end
 
       def tableize_code(code, options)
