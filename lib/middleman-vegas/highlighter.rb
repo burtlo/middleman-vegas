@@ -23,6 +23,20 @@ module Middleman
         return no_html if code_block_is_empty?(code.strip)
         language = metadata[:lang]
 
+        # From the language on the codefence find the formatter and
+        # let the formatter perform the lexing (it will need to maintain language aliases)
+
+        # The studio lexer would be deconstruct the studio prompt through a lexer
+        # it could also find and tag particular elements of commands and put special
+        # classes on them that could be something we could link from or provide
+        # additional support.
+        #
+        # @see https://github.com/jneen/rouge/blob/master/lib/rouge/lexers/shell.rb
+
+
+        # The windows lexer I want to support the "$ -> PS >" and support PS >
+        #
+
         lexer = lexer_for_language(fence_name_to_language(language.to_s), code)
 
         metadata[:class] = [ metadata[:class].to_s, lexer.tag ].join(' ')
@@ -64,37 +78,37 @@ module Middleman
       # @return [#render] based on the code fenced language return the type of
       #   renderer. @see Highlighter.formatters
       def self.formatter_for_language(language)
-        formatters[language]
+        formatters[language].new
       end
 
       # @return [Hash<#render>] a look-up table of all the types of renderers
       def self.formatters
         @formatters ||= begin
-          hash = {}
-          #   "bash" => CodeFormatter.new,
-          #   "conf" => CodeFormatter.new,
-          #   "console" => TerminalFormatter.new,
-          #   "cmd" => TerminalFormatter.new({:prompt => ">", :window_style => "Win32" }),
-          #   "diff" => CodeFormatter.new,
-          #   "handlebars" => CodeFormatter.new,
-          #   "html" => CodeFormatter.new,
-          #   "json" => CodeFormatter.new,
-          #   "js" => CodeFormatter.new,
-          #   "plaintext" => DefaultFormatter.new,
-          #   "powershell" => TerminalFormatter.new({:prompt => "PS >", :window_style => "Win32" }),
-          #   "ps" => CodeFormatter.new,
-          #   "ps1" => CodeFormatter.new,
-          #   "ruby" => CodeFormatter.new,
-          #   "sh" => TerminalFormatter.new,
-          #   "shell" => TerminalFormatter.new,
-          #   "studio" => StudioFormatter.new({:prompt => "[1][default:/src:0]#", :window_style => "hab-studio" }),
-          #   "studio-win" => WindowsStudioFormatter.new({:prompt => "[HAB-STUDIO] Habitat:\\src>", :window_style => "hab-studio" }),
-          #   "sql" => CodeFormatter.new,
-          #   "toml" => CodeFormatter.new,
-          #   "yaml" => CodeFormatter.new
-          # }
+          hash = {
+            "bash" => CodeFormatter,
+            "conf" => CodeFormatter,
+            "console" => TerminalFormatter,
+            # "cmd" => TerminalFormatter({:prompt => ">", :window_style => "Win32" }),
+            "diff" => CodeFormatter,
+            "handlebars" => CodeFormatter,
+            "html" => CodeFormatter,
+            "json" => CodeFormatter,
+            "js" => CodeFormatter,
+          #   "plaintext" => DefaultFormatter,
+            "powershell" => TerminalFormatter,
+            "ps" => CodeFormatter,
+            "ps1" => CodeFormatter,
+            "ruby" => CodeFormatter,
+          #   "sh" => TerminalFormatter,
+            "shell" => TerminalFormatter,
+          #   "studio" => StudioFormatter({:prompt => "[1][default:/src:0]#", :window_style => "hab-studio" }),
+          #   "studio-win" => WindowsStudioFormatter({:prompt => "[HAB-STUDIO] Habitat:\\src>", :window_style => "hab-studio" }),
+            "sql" => CodeFormatter,
+            "toml" => CodeFormatter,
+            "yaml" => CodeFormatter
+          }
 
-          hash.default = CodeFormatter.new
+          hash.default = CodeFormatter
           hash
         end
       end
