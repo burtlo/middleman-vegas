@@ -24,7 +24,7 @@ module Middleman
       def expand_tokens_with_newlines(lexed_code)
         full_lex = []
         lexed_code.each do |token, value|
-          if token.qualname == "Text"
+          if %w[ Text Text.Whitespace ].include? token.qualname
             full_lex << [ token, value ]
           else
             lines = value.split("\n")
