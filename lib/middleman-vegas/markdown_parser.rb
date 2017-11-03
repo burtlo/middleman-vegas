@@ -31,11 +31,13 @@ module Middleman
       AllOptions = /([^\s]+)\s+(.+?)\s+(https?:\/\/\S+|\/\S+)\s*(.+)?/i
       LangCaption = /([^\s]+)\s*(.+)?/i
 
-      # Extract the metadata from the code block. There are two formats:
+      # Extract the metadata from the code block. There are two simple formats:
       #
       #     ```LANGUAGE TITLE
       #
-      #     ```LANGUAGE title:TITLE url:URL link_text:TEXT linenos:LINENOS start:STARTING_LINE mark:MARK_LINES class:CSS_CLASS
+      #     ```LANGUAGE TITLE URL LINK_TEXT
+      #
+      #
       def self.get_metadata(markup)
         defaults = { escape: true }
         clean_markup = OptionsParser.new(markup).clean_markup

@@ -39,6 +39,9 @@ module Middleman
         def code(language=nil, options={}, &block)
           raise 'The code helper requires a block to be provided.' unless block_given?
 
+          options[:lang] = language.to_s
+          options[:marks] ||= []
+
           # Save current buffer for later
           @_out_buf, _buf_was = "", @_out_buf
 
@@ -49,8 +52,7 @@ module Middleman
             @_out_buf = _buf_was
           end
           content = content.encode(Encoding::UTF_8)
-
-          concat_content Highlighter.highlight(content, language, options).html_safe
+          concat_content Highlighter.highlight(content, options).html_safe
         end
       end
     end

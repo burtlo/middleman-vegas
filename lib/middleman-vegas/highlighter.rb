@@ -18,7 +18,7 @@ module Middleman
       def self.highlight(code, metadata={})
         return no_html if code_block_is_empty?(code.strip)
         metadata[:lang] = with_lang_aliases_considered(metadata[:lang])
-        CodeFormatter.new.render(code, metadata)
+        TableFormatter.new.render(code, metadata)
       end
 
       def self.code_block_is_empty?(code)
