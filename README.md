@@ -26,6 +26,40 @@ Activate it to the Middleman `config.rb`:
 activate :vegas
 ```
 
+## Syntax
+
+You can define code fences as you would normally. These code fences have support for the languages defined in [rouge](https://github.com/jneen/rouge/wiki/List-of-supported-languages-and-lexers).
+
+Define a code fence with a language.
+
+    ```lang
+    [code]
+    ```
+
+Define a code fence for a language with the addition of a title.
+
+    ```lang title
+    [code]
+    ```
+
+Define a code fence for a language with additional metadata
+
+    ```lang [metadata]
+    [code]
+    ```
+
+The additional metadata that can be specified:
+
+| Metadata     | Example                    | Description                                                           |
+|:-------------|:---------------------------|:----------------------------------------------------------------------|
+|`lang`        | `ruby`                     | Used by the syntax highlighter. Passing 'plain' disables highlighting.|
+|`title`       | `title:"Figure 1.A"`       | Add a figcaption title to your code block. |
+|`url`         | `url:"https://github.com"` | No default value |
+|`link_text`   | `link_text:"Download"`     | Text for the link, default: `"link"` |
+|`linenos`     | `linenos:true`             | Enables line numbering |
+|`start`       | `start:5`                  | Start the line numbering at the given value. |
+|`mark`        | `mark:1-4,8`               | Highlight lines of code. This example marks lines 1,2,3,4 and 8 |
+|`class`       | `class:"css example"`      | Add CSS class names to the code `<figure>` element |
 
 ## Development
 

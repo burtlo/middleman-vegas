@@ -1,14 +1,12 @@
 module Middleman
   module Vegas
 
-    # When you want to render code in what looks like an editor this is your
-    # formatter to use.
-    class CodeFormatter
+    # When you want to render code with a title, a link, line numbers and highlights
+    # in a table style.
+    class TableFormatter
       def render(code, metadata)
-        language = with_lang_aliases_considered(metadata[:lang])
-
-        lexer = Rouge::Lexer.find_fancy(language, code) || Rouge::Lexers::PlainText
-        lexed_code = lexer.lex(code, {})
+        lexer = Rouge::Lexer.find_fancy(metadata[:lang], code) || Rouge::Lexers::PlainText
+        lexed_code = expand_tokens_with_newlines(lexer.lex(code, {}))
 
         formatter = Rouge::Formatters::HTML.new(wrap: false)
         rendered_code = formatter.format(lexed_code)
@@ -19,15 +17,33 @@ module Middleman
         "<figure class='#{classnames}'>#{caption(metadata)}#{rendered_code}</figure>"
       end
 
-      def with_lang_aliases_considered(lang)
-        case lang
-        when 'ps', 'ps1', 'cmd'
-          'powershell'
-        else
-          lang
+      # The lexed code generates an enumerator of tokens with their values.
+      # Before they are rendered to HTML all of the non-text tokens with newlines
+      # should be split into several tokens of the same type. This ensures
+      # that when they are tableized later the surrounding spans are not broken.
+      def expand_tokens_with_newlines(lexed_code)
+        full_lex = []
+        lexed_code.each do |token, value|
+          if token.qualname == "Text"
+            full_lex << [ token, value ]
+          else
+            lines = value.split("\n")
+            lines.each_with_index do |line, index|
+              # if not the last line or the last line had a newline at the end
+              suffix = if index < (lines.length - 1) || (index == (lines.length - 1) && value.end_with?("\n"))
+                "\n"
+              else
+                ""
+              end
+
+              full_lex << [ token, "#{line}#{suffix}" ]
+            end
+          end
         end
+        full_lex
       end
 
+      # Given the rendered code it is time to present the information in a table.
       def tableize_code(code, options)
         start = options[:start] || 1
         lines = options[:linenos] || false
@@ -49,6 +65,7 @@ module Middleman
         table +="</pre></div>"
       end
 
+      # Generates a caption above the code area when there is a title / url
       def caption(options)
         if options[:title]
           figcaption  = "<figcaption class='code-highlight-caption'><span class='code-highlight-caption-title'>#{options[:title]}</span>"

@@ -1,9 +1,5 @@
 require 'rouge'
-require 'middleman-vegas/formatters/code_formatter'
-require 'middleman-vegas/formatters/default_formatter'
-require 'middleman-vegas/formatters/studio_formatter'
-require 'middleman-vegas/formatters/terminal_formatter'
-require 'middleman-vegas/formatters/windows_studio_formatter'
+require 'middleman-vegas/formatters/table_formatter'
 
 module Middleman
   module Vegas
@@ -21,8 +17,8 @@ module Middleman
       # @return the HTML that will be rendered to the page
       def self.highlight(code, metadata={})
         return no_html if code_block_is_empty?(code.strip)
-        language = metadata[:lang]
-        formatter(language).render(code, metadata)
+        metadata[:lang] = with_lang_aliases_considered(metadata[:lang])
+        CodeFormatter.new.render(code, metadata)
       end
 
       def self.code_block_is_empty?(code)
@@ -33,21 +29,20 @@ module Middleman
         ""
       end
 
-      def self.formatter(language)
-        Array(formatters.find { |formatter, languages| formatter if languages.include?(language) }).first || default_formatter
-      end
-
-      def self.formatters
-        @formatters ||= begin
-          [
-            [ TerminalFormatter.new, %w[ cmd console powershell shell studio ] ],
-            [ CodeFormatter.new, %w[ bash conf diff handlebars html json js ps1 ruby sql toml yaml ] ]
-          ]
+      # When languages are provided they could be aliases for other languages
+      # or the way that they are presented. With a few languages we want to
+      # make sure that they are presented within the context of a console.
+      def self.with_lang_aliases_considered(lang)
+        case lang
+        when 'cmd'
+          'console?lang=powershell'
+        when 'posh', 'powershell', 'shell', 'studio'
+          "console?lang=#{lang}"
+        when 'ps1'
+          'powershell'
+        else
+          lang
         end
-      end
-
-      def self.default_formatter
-        @default_formatter ||= CodeFormatter.new
       end
 
     end
