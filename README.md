@@ -1,8 +1,6 @@
-# Middleman::Octopress::Code::Highlighter
+# Middleman::Vegas
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/middleman/octopress/code/highlighter`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+This brings the great styles and metadata support found in the Octopress Code Highlighter to Middleman. This has some additional features beyond that to support the work being done for Habitat.
 
 ## Installation
 
@@ -22,7 +20,12 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Activate it to the Middleman `config.rb`:
+
+```ruby
+activate :vegas
+```
+
 
 ## Development
 
