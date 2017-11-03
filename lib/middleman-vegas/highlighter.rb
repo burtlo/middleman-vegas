@@ -1,5 +1,5 @@
-require 'rouge'
 require 'middleman-vegas/formatters/table_formatter'
+require 'middleman-vegas/lexers/habitat_studio'
 
 module Middleman
   module Vegas
