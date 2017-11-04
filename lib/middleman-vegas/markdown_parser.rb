@@ -9,7 +9,7 @@ module Middleman
       #     CODE
       #     ```
       def self.parse_document(full_document)
-        full_document.gsub /^`{3}.+?`{3}/m do |code_block|
+        full_document.gsub /^\s{0,4}`{3}.+?`{3}/m do |code_block|
           parse_code_block code_block
         end
       end
@@ -21,10 +21,13 @@ module Middleman
       #     ```
       #
       def self.parse_code_block(code_block)
-        code_block.gsub /`{3}([^\n]+)?\n(.+?)`{3}\Z/m do
-          metadata = get_metadata(Regexp.last_match(1).to_s)
-          code = Regexp.last_match(2).to_s
-          ::Middleman::Vegas::Highlighter.highlight(code, metadata)
+        code_block.gsub /(\s{0,4})`{3}([^\n]+)?\n(.+?)`{3}\Z/m do
+          spacing = Regexp.last_match(1)
+          spacing = (spacing == "\n" ? "" : spacing)
+          metadata = get_metadata(Regexp.last_match(2).to_s)
+          code = Regexp.last_match(3).to_s
+          trimmed_code = code.gsub("\n#{spacing}","\n")[spacing.length..-1]
+          "#{spacing}#{::Middleman::Vegas::Highlighter.highlight(trimmed_code, metadata)}"
         end
       end
 
