@@ -1,3 +1,5 @@
+require 'rouge'
+
 module Middleman
   module Vegas
 
